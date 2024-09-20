@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  web:
+    container_name: web
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    volumes:
+      - ./geradorBoleto:/geradorBoleto
+      - ./data/web/static:/data/web/static/
+      - ./data/web/media:/data/web/media/
+    env_file:
+      - ./dotenv_files/.env
+    depends_on:
+      - db
+    networks:
+      - backend
+
+  db:
+    container_name: db
+    image: postgres:13-alpine
+    volumes:
+      - ./data/postgres/data:/var/lib/postgresql/data/
+    env_file:
+      - ./dotenv_files/.env
+    networks:
+      - backend
+
+  redis:
+    image: redis:alpine
+    networks:
+      - backend
+
+  celery:
+    container_name: celery
+    build: .
+    volumes:
+      - ./geradorBoleto:/geradorBoleto
+    env_file:
+      - ./dotenv_files/.env
+    depends_on:
+      - web
+      - redis
+      - db
+    links:
+      - redis
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
