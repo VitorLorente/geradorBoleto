@@ -36,6 +36,7 @@ services:
   celery:
     container_name: celery
     build: .
+    command: celery -A geradorBoleto worker --loglevel=info
     volumes:
       - ./geradorBoleto:/geradorBoleto
     env_file:
@@ -44,8 +45,6 @@ services:
       - web
       - redis
       - db
-    links:
-      - redis
     networks:
       - backend
 

@@ -11,13 +11,9 @@ class ChargesFile(models.Model):
         verbose_name="Arquivo CSV de boletos",
         upload_to=upload_to
     )
-    uploaded_at = models.DateTimeField(
+    uploadedAt = models.DateTimeField(
         verbose_name="Data e hora de upload do arquivo",
         auto_now_add=True
-    )
-    asynchronous_task_id = models.CharField(
-        verbose_name="Id da task assíncrona",
-        max_length=36
     )
 
 
@@ -29,28 +25,28 @@ class Charge(models.Model):
         on_delete=models.CASCADE
     )
 
-    debt_id_from_file = models.CharField(
+    debtId = models.CharField(
         verbose_name="Id da cobrança recebido no arquivo",
         max_length=38
     )
 
-    debtor_name = models.CharField(
+    name = models.CharField(
         verbose_name="Nome do sacado",
         max_length=40
     )
-    government_id = models.CharField(
+    governmentId = models.CharField(
         verbose_name="Número do boleto",
         max_length=48,
     )
-    debtor_email = models.EmailField(
+    email = models.EmailField(
         verbose_name="E-mail do sacado",
-        max_length=30
+        max_length=50
     )
-    debt_amount = models.DecimalField(
+    debtAmount = models.DecimalField(
         verbose_name="Valor da cobrança",
         max_digits=10,
         decimal_places=2
     )
-    debt_due_date = models.DateField(
+    debtDueDate = models.DateField(
         verbose_name="Data de vencimento da cobrança"
     )

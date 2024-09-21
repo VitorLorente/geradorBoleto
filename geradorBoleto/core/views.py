@@ -22,11 +22,10 @@ class UploadCSVView(APIView):
         if serializer.is_valid():
 
             file = serializer.validated_data['file']
-            task = process_csv_task.delay(file.read().decode('utf-8'))
             charge_file = ChargesFile.objects.create(
-                file=file,
-                asynchronous_task_id=task.id
+                file=file
             )
+            task = process_csv_task.delay(file.read().decode('utf-8'), charge_file.pk)
 
             return Response(
                 {
