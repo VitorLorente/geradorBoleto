@@ -39,6 +39,7 @@ services:
     command: celery -A geradorBoleto worker --loglevel=info
     volumes:
       - ./geradorBoleto:/geradorBoleto
+      - ./data/web/media:/data/web/media/
     env_file:
       - ./dotenv_files/.env
     depends_on:

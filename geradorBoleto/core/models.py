@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.db import models
-
+from postgres_copy import CopyManager
 from .utils import upload_to
 
 
@@ -25,14 +25,15 @@ class Charge(models.Model):
         on_delete=models.CASCADE
     )
 
-    debtId = models.CharField(
+    debtId = models.UUIDField(
         verbose_name="Id da cobrança recebido no arquivo",
         max_length=38,
+        primary_key=True,
         unique=True,
         null=False,
-        blank=False
+        blank=False,
+        editable=False
     )
-
     name = models.CharField(
         verbose_name="Nome do sacado",
         max_length=40,
@@ -63,3 +64,5 @@ class Charge(models.Model):
         null=False,
         blank=False
     )
+
+    objects = CopyManager()

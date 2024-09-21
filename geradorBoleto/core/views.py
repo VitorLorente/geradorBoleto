@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from .models import ChargesFile
 from .serializers import CSVUploadSerializer
-from .tasks import process_csv_task
+from .tasks import process_csv_task_copy
 
 
 class UploadCSVView(APIView):
@@ -17,10 +17,10 @@ class UploadCSVView(APIView):
             status=status.HTTP_200_OK
         )
      
-    def post(self, request, *args, **kwargs):
+    # def post(self, request, *args, **kwargs):
         serializer = CSVUploadSerializer(data=request.data)
-        if serializer.is_valid():
 
+        if serializer.is_valid():
             file = serializer.validated_data['file']
             charge_file = ChargesFile.objects.create(
                 file=file
@@ -36,9 +36,32 @@ class UploadCSVView(APIView):
             )
         
         else:
-
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def post(self, request, *args, **kwargs):
+        serializer = CSVUploadSerializer(data=request.data)
+
+        if serializer.is_valid():
+            file = serializer.validated_data['file']
+            charge_file = ChargesFile.objects.create(
+                file=file
+            )
+
+            task = process_csv_task_copy.delay(
+                charge_file.file.path,
+                charge_file.pk
+            )
+
+            return Response(
+                {
+                    "task_id": task.id,
+                    "file_name": charge_file.file.name,
+                },
+                status=status.HTTP_202_ACCEPTED
+            )
+        
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def get_task_status(request, task_id):
