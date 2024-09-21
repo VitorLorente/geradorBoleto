@@ -1,14 +1,18 @@
+from datetime import datetime
+
 from django.db import models
+
+from .utils import upload_to
 
 
 class ChargesFile(models.Model):
     
-    file_name = models.CharField(
-        verbose_name="Nome do arquivo",
-        max_length=25
+    file = models.FileField(
+        verbose_name="Arquivo CSV de boletos",
+        upload_to=upload_to
     )
     uploaded_at = models.DateTimeField(
-        verbose_name="Data de upload do arquivo",
+        verbose_name="Data e hora de upload do arquivo",
         auto_now_add=True
     )
 
@@ -25,10 +29,6 @@ class Charge(models.Model):
         verbose_name="Id da cobrança recebido no arquivo",
         max_length=38
     )
-    # Este campo não está configurado como Primary Key pois não sei se este id é único mesmo
-    # inclusive entre diferentes instituições de pagamentos. Portanto, preferi deixar explícito
-    # que este id tem origem no arquivo recebido. O ID utilizado como identificador é o criado
-    # automaticamente pelo Django
 
     debtor_name = models.CharField(
         verbose_name="Nome do sacado",

@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
+from .models import ChargesFile
 from .serializers import CSVUploadSerializer
 from .tasks import process_csv_task
 
@@ -22,9 +22,16 @@ class UploadCSVView(APIView):
         if serializer.is_valid():
 
             file = serializer.validated_data['file']
+            charge_file = ChargesFile.objects.create(file=file)
             task = process_csv_task.delay(file.read().decode('utf-8'))
 
-            return Response({"task_id": task.id}, status=status.HTTP_202_ACCEPTED)
+            return Response(
+                {
+                    "task_id": task.id,
+                    "file_name": charge_file.file.name,
+                },
+                status=status.HTTP_202_ACCEPTED
+            )
         
         else:
 
