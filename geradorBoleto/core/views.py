@@ -16,27 +16,6 @@ class UploadCSVView(APIView):
             {"message": "Envie um arquivo CSV usando POST"},
             status=status.HTTP_200_OK
         )
-     
-    # def post(self, request, *args, **kwargs):
-        serializer = CSVUploadSerializer(data=request.data)
-
-        if serializer.is_valid():
-            file = serializer.validated_data['file']
-            charge_file = ChargesFile.objects.create(
-                file=file
-            )
-            task = process_csv_task.delay(file.read().decode('utf-8'), charge_file.pk)
-
-            return Response(
-                {
-                    "task_id": task.id,
-                    "file_name": charge_file.file.name,
-                },
-                status=status.HTTP_202_ACCEPTED
-            )
-        
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, *args, **kwargs):
         serializer = CSVUploadSerializer(data=request.data)
