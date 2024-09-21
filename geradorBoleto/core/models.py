@@ -27,26 +27,39 @@ class Charge(models.Model):
 
     debtId = models.CharField(
         verbose_name="Id da cobrança recebido no arquivo",
-        max_length=38
+        max_length=38,
+        unique=True,
+        null=False,
+        blank=False
     )
 
     name = models.CharField(
         verbose_name="Nome do sacado",
-        max_length=40
+        max_length=40,
+        null=False,
+        blank=False
     )
     governmentId = models.CharField(
         verbose_name="Número do boleto",
         max_length=48,
+        null=False,
+        blank=False
     )
     email = models.EmailField(
         verbose_name="E-mail do sacado",
-        max_length=50
+        max_length=50,
+        null=False,
+        blank=False
     )
     debtAmount = models.DecimalField(
         verbose_name="Valor da cobrança",
         max_digits=10,
-        decimal_places=2
+        decimal_places=2,
+        null=False,
+        blank=False
     )
     debtDueDate = models.DateField(
-        verbose_name="Data de vencimento da cobrança"
+        verbose_name="Data de vencimento da cobrança",
+        null=False,
+        blank=False
     )
