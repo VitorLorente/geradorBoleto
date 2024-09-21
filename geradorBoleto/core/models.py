@@ -15,6 +15,10 @@ class ChargesFile(models.Model):
         verbose_name="Data e hora de upload do arquivo",
         auto_now_add=True
     )
+    asynchronous_task_id = models.CharField(
+        verbose_name="Id da task assíncrona",
+        max_length=36
+    )
 
 
 class Charge(models.Model):
