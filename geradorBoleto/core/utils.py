@@ -1,5 +1,6 @@
-import os
+import csv
 from datetime import datetime
+from io import StringIO
 
 
 def upload_to(instance, filename):
@@ -12,6 +13,18 @@ def upload_to(instance, filename):
 
     return filename
 
+
 def add_fk_column_generator(dict_reader, pk):
     for row in dict_reader:
         yield dict(row, **{'source_file': pk})
+
+
+def generate_csv_from_dict(data):
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=data[0].keys())
+    writer.writeheader()
+    writer.writerows(data)
+
+    output.seek(0)
+
+    return output

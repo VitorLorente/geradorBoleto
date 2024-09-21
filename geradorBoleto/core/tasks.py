@@ -1,10 +1,9 @@
 import csv
-from io import StringIO
 
 from celery import shared_task
 
 from .models import Charge
-from .utils import add_fk_column_generator
+from .utils import add_fk_column_generator, generate_csv_from_dict
 
 
 @shared_task(bind=True)
@@ -15,12 +14,8 @@ def process_csv_task_copy(self, file_path, charge_file_pk):
         normalized_reader = [
             row for row in add_fk_column_generator(reader, charge_file_pk)
         ]
-        output = StringIO()
-        writer = csv.DictWriter(output, fieldnames=normalized_reader[0].keys())
-        writer.writeheader()
-        writer.writerows(normalized_reader)
 
-        output.seek(0)
+        output = generate_csv_from_dict(normalized_reader)
 
         Charge.objects.from_csv(
             output,
@@ -32,6 +27,8 @@ def process_csv_task_copy(self, file_path, charge_file_pk):
                 email="email",
                 debtAmount="debtAmount",
                 debtDueDate="debtDueDate"
-            )
+            ),
+            ignore_conflicts=True # Permite ignorar linhas com erro de unique constraint e salvar o restante
+            drop_constraints=False # Permite ignorar constraints gerais
         )
 
