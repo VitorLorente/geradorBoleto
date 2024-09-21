@@ -28,7 +28,7 @@ def process_csv_task_copy(self, file_path, charge_file_pk):
                 debtAmount="debtAmount",
                 debtDueDate="debtDueDate"
             ),
-            ignore_conflicts=True # Permite ignorar linhas com erro de unique constraint e salvar o restante
+            ignore_conflicts=True, # Permite ignorar linhas com erro de unique constraint e salvar o restante
             drop_constraints=False # Permite ignorar constraints gerais
         )
 
