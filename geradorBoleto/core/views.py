@@ -1,12 +1,13 @@
+from celery import chain
 from celery.result import AsyncResult
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import ChargesFile
 from .serializers import CSVUploadSerializer
-from .tasks import process_csv_task_copy
+from . import tasks
 
 
 class UploadCSVView(APIView):
@@ -26,14 +27,23 @@ class UploadCSVView(APIView):
                 file=file
             )
 
-            task = process_csv_task_copy.delay(
-                charge_file.file.path,
-                charge_file.pk
-            )
+            chain(
+                tasks.process_csv.s(
+                    charge_file.file.path,
+                    charge_file.pk
+                ),
+                tasks.execute_validation_checks.si(
+                    charge_file.pk
+                )
+            ).apply_async()
+
+            # task = process_csv_task_copy.delay(
+            #     charge_file.file.path,
+            #     charge_file.pk
+            # )
 
             return Response(
                 {
-                    "task_id": task.id,
                     "file_name": charge_file.file.name,
                 },
                 status=status.HTTP_202_ACCEPTED

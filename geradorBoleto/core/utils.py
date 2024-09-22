@@ -1,5 +1,7 @@
 import csv
+import re
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from io import StringIO
 
 
@@ -14,9 +16,9 @@ def upload_to(instance, filename):
     return filename
 
 
-def add_fk_column_generator(dict_reader, pk):
+def normalize_columns_generator(dict_reader, pk):
     for row in dict_reader:
-        yield dict(row, **{'source_file': pk})
+        yield dict(row, **{'source_file': pk, 'stage': "IMPORTED"})
 
 
 def generate_csv_from_dict(data):
@@ -28,3 +30,12 @@ def generate_csv_from_dict(data):
     output.seek(0)
 
     return output
+
+
+def validate_decimal(value):
+    try:
+        Decimal(value)
+    except InvalidOperation:
+        return False
+    return value <= Decimal("99999.99") # valor máximo que cabe num boleto
+    
