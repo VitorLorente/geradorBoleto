@@ -32,7 +32,13 @@ class UploadCSVView(APIView):
                     charge_file.file.path,
                     charge_file.pk
                 ),
-                tasks.execute_validation_checks.si(
+                tasks.performs_validation_checks.si(
+                    charge_file.pk
+                ),
+                tasks.performs_charge_generation.si(
+                    charge_file.pk
+                ),
+                tasks.performs_sending_emails.si(
                     charge_file.pk
                 )
             ).apply_async()
@@ -46,15 +52,3 @@ class UploadCSVView(APIView):
         
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
-def get_task_status(request, task_id):
-    task_result = AsyncResult(task_id)
-    status_task = task_result.status
-    result_task = task_result.result if task_result.ready() else None
-
-    return Response({
-        "task_id": task_id,
-        "status": status_task,
-        "result": result_task
-    }, status=status.HTTP_200_OK)
