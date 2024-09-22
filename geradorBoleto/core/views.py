@@ -37,11 +37,6 @@ class UploadCSVView(APIView):
                 )
             ).apply_async()
 
-            # task = process_csv_task_copy.delay(
-            #     charge_file.file.path,
-            #     charge_file.pk
-            # )
-
             return Response(
                 {
                     "file_name": charge_file.file.name,
