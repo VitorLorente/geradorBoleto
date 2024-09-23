@@ -24,7 +24,7 @@ migrate:
 
 # Target para rodar testes
 tests:
-	docker exec web python manage.py test
+	docker exec web python manage.py test core.tests -v 2
 
 # Lista de comandos
 help:
