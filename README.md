@@ -29,7 +29,7 @@
     - django_fsm -> Para controle rigoroso de transição de status dos boletos
         - https://docs.viewflow.io/fsm/index.html
 
-- A ideia foi criar uma rotina de ETL que consegue realizar uma "pancada" grande no banco, sem perder o rigor dos dados relacionais, e depois um fluxo de:
+- A ideia foi criar uma rotina de ETL que consegue realizar uma "pancada" grande no banco com boa performance, mas sem perder o rigor dos dados relacionais, e depois um fluxo de:
     - Verificação de consistência
     - Geração de boletos
     - Disparo de e-mails
