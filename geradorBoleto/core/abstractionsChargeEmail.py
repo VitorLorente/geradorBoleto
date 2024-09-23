@@ -20,13 +20,6 @@ class AbstractChargeGenerator(ABC):
 
 class AbstractEmailSender(ABC):
 
-    # @abstractmethod
-    # def format_email(self):
-    #     """
-    #     Método responsável por colher as informações e formatar a string do e-mail.
-    #     """
-    #     pass
-
     @abstractmethod
     def send_email(self):
         """
