@@ -13,3 +13,8 @@
         - ```make up```
     - ```make help``` irá mostrar todos os comandos disponíveis
 
+- Com o projeto rodando (deverão estar rodando 4 containeres: *web*, *db*, *redis* e *celery*), realize a importação de um arquivo .csv no endpoint http://localhost:8000/upload-csv/
+    - No terminal, por exemplo: ```curl -X POST http://localhost:8000/upload-csv/ -F "file=@path/to/you/file.csv"```
+        - Substitua ```path/to/you/file.csv``` pelo caminho para seu arquivo
+    - Na raiz do projeto há um arquivo *input_short.csv* com apenas 100.000 linhas, para testes breves:
+        Com o terminal na raiz do projeto: ```curl -X POST http://localhost:8000/upload-csv/ -F "file=@input_short.csv"```
