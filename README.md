@@ -19,7 +19,7 @@
     - No terminal, por exemplo: ```curl -X POST http://localhost:8000/upload-csv/ -F "file=@path/to/you/file.csv"```
         - Substitua ```path/to/you/file.csv``` pelo caminho para seu arquivo
     - Na raiz do projeto há um arquivo *input_short.csv* com apenas 100.000 linhas, para testes breves:
-        Com o terminal na raiz do projeto: ```curl -X POST http://localhost:8000/upload-csv/ -F "file=@input_short.csv"```
+        - Com o terminal na raiz do projeto: ```curl -X POST http://localhost:8000/upload-csv/ -F "file=@input_short.csv"```
 
 
 ### Sobre o projeto
