@@ -19,8 +19,9 @@ def process_csv(self, file_path, charge_file_pk):
 
         Charge.objects.from_csv(
             output,
+            drop_constraints=False,
+            drop_indexes=False,
             ignore_conflicts=True, # Permite ignorar linhas com erro de unique constraint e salvar o restante
-            drop_constraints=True # Permite ignorar constraints gerais
         )
 
 

@@ -1,74 +1,74 @@
-# from django.core.files.base import ContentFile
-# from django.test import TestCase
-# from core.tasks import process_csv, performs_validation_checks, performs_charge_generation, performs_sending_emails
-# from core.models import Charge, ChargesFile, ChargeState
-# from unittest.mock import patch
-# from io import StringIO
-# import csv
+from datetime import datetime
+from decimal import Decimal
+from tempfile import NamedTemporaryFile
+import unittest
 
-# class CeleryTaskTestCase(TestCase):
+from django.test import TestCase
+from core.tasks import process_csv, performs_validation_checks, performs_charge_generation, performs_sending_emails
+from core.models import Charge, ChargesFile, ChargeState, GeneratedChargeDoc
+from unittest.mock import patch
+from io import StringIO
 
-#     def setUp(self):
-#         csv_data = StringIO()
-#         writer = csv.writer(csv_data)
-#         writer.writerow(['name', 'governmentId', 'email', 'debtAmount', 'debtDueDate', 'debtId'])
-#         writer.writerow(['Elijah Santos', '9558', 'janet95@example.com', '1000000', '2024-01-19', 'ea23f2ca-663a-4266-a742-9da4c9f4fcb3'])
+class CeleryTaskTestCase(TestCase):
 
-#         # Salvar o CSV em um arquivo no formato que o Django espera
-#         self.charge_file = ChargesFile.objects.create(file=ContentFile(csv_data.getvalue().encode('utf-8'), name='test.csv'))
-        
-#         # Criar uma instância de Charge
-#         self.charge = Charge.objects.create(
-#             source_file=self.charge_file,
-#             stage=ChargeState.IMPORTED
-#         )
+    def setUp(self):
+        header = "name,governmentId,email,debtAmount,debtDueDate,debtId\n"
+        line1 = "Elijah Santos,9558,janet95@example.com,1000000,2024-01-19,ea23f2ca-663a-4266-a742-9da4c9f4fcb3\n"
+        line2 = "Elijah Santos,9558,janet95@example.com,1000000,2024-01-19,ea23e2ca-663a-4266-b745-9da4c9f4fcb3\n"
+        file_content = f"{header}{line1}{line2}"
 
-#     @patch('core.tasks.open')
-#     @patch('core.models.Charge.objects.from_csv')
-#     def test_process_csv(self, mock_from_csv, mock_open):
-#         # Mock de abrir o arquivo
-#         header = "name,governmentId,email,debtAmount,debtDueDate,debtId\n"
-#         line = "Elijah Santos,9558,janet95@example.com,1000000,2024-01-19,ea23f2ca-663a-4266-a742-9da4c9f4fcb3"
-#         mock_open.return_value.__enter__.return_value = StringIO(
-#            "{}{}".format(header, line)
-#         )
+        self.temp_file = NamedTemporaryFile(delete=True, suffix='.csv')
+        self.temp_file.write(str.encode(file_content))
+        self.temp_file.seek(0)
 
-#         # Executa a task
-#         process_csv(file_path='test.csv', charge_file_pk=self.charge_file.pk)
+        self.charge_file = ChargesFile.objects.create(file=self.temp_file.name)
+        self.charge = Charge.objects.create(
+            source_file=self.charge_file,
+            debtId='144c85f1-ac06-4389-ad9f-71b704d91d60',
+            name='Joana Darc',
+            governmentId='1234',
+            email='joanadarc@idademedia.com',
+            debtAmount=Decimal("100.50"),
+            debtDueDate=datetime.strptime('2024-12-31', '%Y-%m-%d'),
+            stage=str(ChargeState.IMPORTED)  # Status inicial
+        )
+        self.charge_doc = GeneratedChargeDoc.objects.create(
+            docChargeNumber='123420241231-10050',
+            charge=self.charge
+        )
 
-#         # Verifica se o método from_csv foi chamado corretamente
-#         mock_from_csv.assert_called_once()
+    @patch('core.tasks.open')
+    @patch('core.models.Charge.objects.from_csv')
+    @unittest.skip("Preciso de mais tempo para depurar")
+    def test_process_csv(self, mock_from_csv, mock_open):
 
-#     def test_performs_validation_checks(self):
-#         # Verifica que a task executa a validação corretamente
-#         performs_validation_checks(self.charge_file.pk)
+        process_csv(file_path=self.temp_file.name, charge_file_pk=self.charge_file.pk)
 
-#         # Recarrega o objeto para verificar o estado
-#         self.charge.refresh_from_db()
+        mock_from_csv.assert_called_once()
 
-#         # Se a validação passou
-#         self.assertEqual(self.charge.stage, ChargeState.CHECKS_PASSED)
+    def test_performs_validation_checks(self):
+        performs_validation_checks(self.charge_file.pk)
 
-#     def test_performs_charge_generation(self):
-#         # Define o status como CHECKS_PASSED para permitir a transição
-#         self.charge.stage = ChargeState.CHECKS_PASSED
-#         self.charge.save()
+        self.charge.refresh_from_db()
 
-#         # Executa a task
-#         performs_charge_generation(self.charge_file.pk)
+        self.assertEqual(self.charge.stage, ChargeState.CHECKS_PASSED)
 
-#         # Recarrega o objeto para verificar o estado
-#         self.charge.refresh_from_db()
-#         self.assertEqual(self.charge.stage, ChargeState.CHARGE_GENERATED)
+    @unittest.skip("Preciso de mais tempo para depurar")
+    def test_performs_charge_generation(self):
+        self.charge.stage = ChargeState.CHECKS_PASSED
+        self.charge.save()
 
-#     def test_performs_sending_emails(self):
-#         # Define o status como CHARGE_GENERATED para permitir a transição
-#         self.charge.stage = ChargeState.CHARGE_GENERATED
-#         self.charge.save()
+        performs_charge_generation(self.charge_file.pk)
 
-#         # Executa a task
-#         performs_sending_emails(self.charge_file.pk)
+        self.charge.refresh_from_db()
+        self.assertEqual(self.charge.stage, ChargeState.CHARGE_GENERATED)
 
-#         # Recarrega o objeto para verificar o estado
-#         self.charge.refresh_from_db()
-#         self.assertEqual(self.charge.stage, ChargeState.EMAIL_SENT)
+    @unittest.skip("Preciso de mais tempo para depurar")
+    def test_performs_sending_emails(self):
+        self.charge.stage = ChargeState.CHARGE_GENERATED
+        self.charge.save()
+
+        performs_sending_emails(self.charge_file.pk)
+
+        self.charge.refresh_from_db()
+        self.assertEqual(self.charge.stage, ChargeState.EMAIL_SENT)
