@@ -7,6 +7,7 @@
     - Para a variável SECRET_KEY, será necessário gerar uma nova chave com o comando abaixo:
         - ```python3 -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())" ```
         - Copie a chave e cole entre aspas em SECRET_KEY=
+        - Note que é necessário rodar o comando python em algum ambiente com o Django instalado
 
 - Agora, basta rodar um ```make up``` e aguardar o projeto subir.
     - Caso tenha problemas com conflitos de outros containeres aqui, rode:
